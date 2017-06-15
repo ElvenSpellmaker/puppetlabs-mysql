@@ -7,7 +7,7 @@ define mysql::db (
   $collate                                    = 'utf8_general_ci',
   $host                                       = 'localhost',
   $grant                                      = 'ALL',
-  Optional[Variant[Array, Hash, String]] $sql = undef,
+  $sql                                        = undef,
   $enforce_sql                                = false,
   Enum['absent', 'present'] $ensure           = 'present',
   $import_timeout                             = 300,
