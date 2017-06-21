@@ -9,7 +9,7 @@ define mysql::db (
   $grant                                      = 'ALL',
   $sql                                        = undef,
   $enforce_sql                                = false,
-  Enum['absent', 'present'] $ensure           = 'present',
+  $ensure                                     = 'present',
   $import_timeout                             = 300,
   $import_cat_cmd                             = 'cat',
 ) {
