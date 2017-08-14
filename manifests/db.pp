@@ -29,15 +29,27 @@ define mysql::db (
   }
   ensure_resource('mysql_database', $dbname, $db_resource)
 
+  $hosts = is_array($host) ? {
+    true    => $host,
+    default => [$host],
+  }
+
   $user_resource = {
     ensure        => $ensure,
     password_hash => mysql_password($password),
     provider      => 'mysql',
+    user          => $user,
   }
-  ensure_resource('mysql_user', "${user}@${host}", $user_resource)
+  ensure_resource('mysql::iteration::user_iterator', $hosts, $user_resource)
 
   if $ensure == 'present' {
-    mysql_grant { "${user}@${host}/${table}":
+    mysql::iteration::grant_iterator { $hosts:
+      user       => $user,
+      privileges => $grant,
+      provider   => 'mysql',
+      table      => $table,
+    }
+    /*mysql_grant { "${user}@${host}/${table}":
       privileges => $grant,
       provider   => 'mysql',
       user       => "${user}@${host}",
@@ -46,7 +58,7 @@ define mysql::db (
         Mysql_database[$dbname],
         Mysql_user["${user}@${host}"],
       ],
-    }
+    }*/
 
     $refresh = ! $enforce_sql
 
@@ -57,7 +69,7 @@ define mysql::db (
         environment => "HOME=${::root_home}",
         refreshonly => $refresh,
         path        => '/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin',
-        require     => Mysql_grant["${user}@${host}/${table}"],
+        require     => Mysql_grant[$hosts],
         subscribe   => Mysql_database[$dbname],
         timeout     => $import_timeout,
       }
